@@ -1,3 +1,4 @@
+const CustomError = require('./../Utils/CustomError');
 const devError = (res,error) => {
         res.status(error.statusCode).json({
             status: error.statusCode,
@@ -19,14 +20,29 @@ const prodError = (res,error) => {
         })
     }
 }
+
+const castErrorHandler = (err) => {
+    const msg = `Invalid Value ${err.value} for feild ${err.path}!`;
+    return new CustomError(msg,400);
+}
+
+const duplicateKeyErrorHandler = (err) => {
+    const name = err.keyValue.name;
+    const msg = `There is already a movie with name ${name}. Please use another name!`;
+    return new CustomError(msg,400)
+}
+
+
 module.exports = (error,req,res,next)=>{
     error.statusCode = error.statusCode || 500;
     error.status = error.status || 'error';
 
     if(process.env.NODE_ENV === 'development'){
         devError(res,error);
-    }
-    if(process.env.NODE_ENV === 'production'){
-        prodError(res.error)
+    }else if(process.env.NODE_ENV === 'production'){
+        // let err = {...error};
+        if(error.name === 'CastError')error = castErrorHandler(error);
+        if(error.code === 1100)error = duplicateKeyErrorHandler(error);
+        prodError(res,error)
     }
 }

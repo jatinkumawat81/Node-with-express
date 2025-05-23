@@ -7,14 +7,25 @@ mongoose.connect(process.env.CONN_STR,{
     useNewUrlParser: true
 }).then((conn)=>{
     console.log('successfull connect DB');
-    // create a server
-    const port = process.env.PORT || 3000;
-    app.listen(port,()=>{
-        console.log('server has started');
-    })
-    
 }).catch((err)=>{
-    console.log('err');
-    
+    console.log('err Db', err);    
 })
 
+// create a server
+const port = process.env.PORT || 3000;
+const server = app.listen(port,()=>{
+    console.log('server has started');
+});
+
+process.on('unhandledRejection', (err)=>{
+    console.log('Unhandled rejection occured! Shutting down...');
+    server.close(()=>{
+        process.exit(1);
+    });
+})
+process.on('uncaughtException', (err)=>{
+    console.log('Uncaught Exception occured! Shutting down...');
+    server.close(()=>{
+        process.exit(1);
+    });
+})

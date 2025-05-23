@@ -1,15 +1,16 @@
 const express = require('express');
-let app = express();
 const CustomError = require('./Utils/CustomError');
 const globelErrorHandler = require('./Controllers/errorController');
+const moviesRouter = require('./Routes/moviesRoutes');
+const authRouter = require('./Routes/authRouter');
 
+let app = express();
 
 app.use(express.json())
 
 
-const moviesRouter = require('./Routes/moviesRoutes')
 app.use('/api/v1/movies', moviesRouter);
-
+app.use('/api/v1/users', authRouter);
 
 app.all('*',(req,res,next)=>{
     // res.status(404).json({

@@ -6,10 +6,11 @@ const CustomError = require('./../Utils/CustomError');
 
 exports.getHighestRated = (req,res,next) => {
     req.query.limit = '5';
-    req.query.sort = '-raring'
+    req.query.sort = '-rating'
     next();
 }
 exports.getAllMovies = asyncErrorHandler(async (req,res,next) =>{
+
     const features = new ApiFeatures(Movie.find(),req.query).sort().filter().limitFeild().pagination();
     let movies = await features.query;
     res.status(200).json({
