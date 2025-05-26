@@ -32,6 +32,13 @@ const duplicateKeyErrorHandler = (err) => {
     return new CustomError(msg,400)
 }
 
+const handleExpiredJWT = (err) => {
+    return new CustomError('JWT has expired. Please login again!',401);
+}
+
+const handleJWTError = (err) => {
+    return new CustomError('Invalid token. Please login again!',401);
+}
 
 module.exports = (error,req,res,next)=>{
     error.statusCode = error.statusCode || 500;
@@ -43,6 +50,8 @@ module.exports = (error,req,res,next)=>{
         // let err = {...error};
         if(error.name === 'CastError')error = castErrorHandler(error);
         if(error.code === 1100)error = duplicateKeyErrorHandler(error);
+        if(error.name === 'TokenExpiredError') error = handleExpiredJWT(error);
+        if(error.name === 'JsonWebTokenError') error = handleJWTError(error);
         prodError(res,error)
     }
 }
