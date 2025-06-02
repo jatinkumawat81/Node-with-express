@@ -13,8 +13,16 @@ const signToken = id =>{
 }
 
 const createSendResponse = (user,statusCode,res)=>{
-    const token = signToken(user._id)
-
+    const token = signToken(user._id);
+    const options = {
+        maxAge: process.env.LOGIN_EXPIRES,
+        httpOnly: true
+    }
+    if(process.env.NODE_ENV === 'production'){
+        options.secure = true;
+    }
+    res.cookie('jwt',token,options);
+    user.password = undefined;
    res.status(statusCode).json({
     status: 'success',
     token,
@@ -147,21 +155,3 @@ exports.resetPassword = asyncErrorHandler(async(req,res,next) => {
     createSendResponse(user,200,res);
 });
 
-exports.updatePassword = asyncErrorHandler(async(req,res,next)=>{
-    //GET current user data from database
-    const user = await User.findById(req.user._id).select('+password');
-
-    //check if the supplied current password is correct
-    if(!(await user.comparePasswordInDb(req.body.currentPassword,user.password))){
-        return next(new CustomError('The current password you provided is wrong', 401));
-    }
-
-    //if supplied password is correct, update user password with new value
-    user.password = req.body.password;
-    user.confirmPassword = req.body.confirmPassword;
-    await user.save();
-    //login user & send JWT
-
-    
-    createSendResponse(user,200,res);
-})
